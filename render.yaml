@@ -1,7 +1,7 @@
 services:
   - type: web
     name: medical-core-api
-    env: docker
+    runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free
     envVars:
@@ -25,6 +25,9 @@ services:
         value: prod
     healthCheckPath: /actuator/health
     autoDeploy: true
+    scaling:
+      minInstances: 1
+      maxInstances: 1
 
 databases:
   - name: medical-db
