@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# Build output
+target/
+build/
+out/
+
+# Logs
+*.log
+logs/
+
+# Test files
+src/test/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Other
+README.md
+LICENSE
+*.md 

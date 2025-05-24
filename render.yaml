@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: medical-core-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:mysql://${MYSQL_HOST}:3306/medical_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - key: SPRING_DATASOURCE_USERNAME
+        value: ${MYSQL_USERNAME}
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: ${MYSQL_PASSWORD}
+      - key: KEYCLOAK_AUTH_SERVER_URL
+        value: ${KEYCLOAK_URL}
+      - key: KEYCLOAK_REALM
+        value: medical-realm
+      - key: KEYCLOAK_RESOURCE
+        value: admin-cli
+      - key: KEYCLOAK_USERNAME
+        value: ${KEYCLOAK_ADMIN}
+      - key: KEYCLOAK_PASSWORD
+        value: ${KEYCLOAK_PASSWORD}
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+
+databases:
+  - name: medical-db
+    databaseName: medical_db
+    plan: free
+    ipAllowList: [] 
