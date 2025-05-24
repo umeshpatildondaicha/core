@@ -2,7 +2,7 @@ services:
   - type: web
     name: medical-core-api
     runtime: docker
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./Dockerfile.prod
     plan: free
     envVars:
       - key: SPRING_DATASOURCE_URL
