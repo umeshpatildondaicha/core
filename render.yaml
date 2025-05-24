@@ -29,10 +29,6 @@ services:
         value: ${KEYCLOAK_PASSWORD}
       - key: KEYCLOAK_ADMIN_CLIENT_ID
         value: admin-cli
-      - key: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
-        value: ${KEYCLOAK_URL}/realms/medical-realm
-      - key: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
-        value: ${KEYCLOAK_URL}/realms/medical-realm/protocol/openid-connect/certs
       - key: SPRING_PROFILES_ACTIVE
         value: prod
     healthCheckPath: /actuator/health
