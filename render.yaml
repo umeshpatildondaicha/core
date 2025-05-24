@@ -16,11 +16,23 @@ services:
       - key: KEYCLOAK_REALM
         value: medical-realm
       - key: KEYCLOAK_RESOURCE
-        value: admin-cli
-      - key: KEYCLOAK_USERNAME
+        value: medical-client
+      - key: KEYCLOAK_CREDENTIALS_SECRET
+        value: ${KEYCLOAK_CLIENT_SECRET}
+      - key: KEYCLOAK_PUBLIC_CLIENT
+        value: "false"
+      - key: KEYCLOAK_PRINCIPAL_ATTRIBUTE
+        value: admin
+      - key: KEYCLOAK_ADMIN_USERNAME
         value: ${KEYCLOAK_ADMIN}
-      - key: KEYCLOAK_PASSWORD
+      - key: KEYCLOAK_ADMIN_PASSWORD
         value: ${KEYCLOAK_PASSWORD}
+      - key: KEYCLOAK_ADMIN_CLIENT_ID
+        value: admin-cli
+      - key: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+        value: ${KEYCLOAK_URL}/realms/medical-realm
+      - key: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+        value: ${KEYCLOAK_URL}/realms/medical-realm/protocol/openid-connect/certs
       - key: SPRING_PROFILES_ACTIVE
         value: prod
     healthCheckPath: /actuator/health
