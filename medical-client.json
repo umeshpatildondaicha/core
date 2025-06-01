@@ -2,8 +2,8 @@
   "clientId": "medical-client",
   "name": "Umesh Patil",
   "description": "",
-  "rootUrl": "http://localhost:8080",
-  "adminUrl": "http://localhost:8080",
+  "rootUrl": "http://localhost:8082",
+  "adminUrl": "http://localhost:8082",
   "baseUrl": "",
   "surrogateAuthRequired": false,
   "enabled": true,
@@ -11,10 +11,10 @@
   "clientAuthenticatorType": "client-secret",
   "secret": "AbdAhERhkdheTjG2yKcAW9mH1dPQDRAk",
   "redirectUris": [
-    "http://localhost:8080/*"
+    "http://localhost:8082/*"
   ],
   "webOrigins": [
-    "http://localhost:8080"
+    "http://localhost:8082"
   ],
   "notBefore": 0,
   "bearerOnly": false,

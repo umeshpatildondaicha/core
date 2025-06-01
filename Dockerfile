@@ -30,7 +30,7 @@ ENV JAVA_OPTS="-Xms512m -Xmx1024m"
 ENV SPRING_PROFILES_ACTIVE="prod"
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8082
 
 # Run the application
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"] 

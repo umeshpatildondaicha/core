@@ -46,7 +46,7 @@ docker run --name mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 -d mysql:8.0
 
 2. Start Keycloak:
 ```bash
-docker run --name keycloak -p 8180:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:22.0.5 start-dev
+docker run --name keycloak -p 8182:8082 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:22.0.5 start-dev
 ```
 
 3. Configure Keycloak:
@@ -64,14 +64,14 @@ mvn spring-boot:run
 ## API Documentation
 
 Once the application is running, you can access:
-- Swagger UI: http://localhost:8080/swagger-ui.html
-- OpenAPI documentation: http://localhost:8080/api-docs
+- Swagger UI: http://localhost:8082/swagger-ui.html
+- OpenAPI documentation: http://localhost:8082/api-docs
 
 ## Monitoring
 
 The application exposes several monitoring endpoints:
-- Health check: http://localhost:8080/actuator/health
-- Metrics: http://localhost:8080/actuator/metrics
+- Health check: http://localhost:8082/actuator/health
+- Metrics: http://localhost:8082/actuator/metrics
 - Prometheus: http://localhost:8080/actuator/prometheus
 
 ## Testing
