@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -19,12 +23,28 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
     
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String email;
     
     @Column(nullable = false)
     private String password;
     
+    @Column(name = "mobile_number", unique = true)
+    private String mobileNumber;
+    
+    @Column(name = "keycloak_id")
+    private String keycloakId;
+    
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+    
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+    
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;

@@ -1,12 +1,9 @@
 package com.core.darkcoders.core.controller;
 
-import com.core.darkcoders.core.dto.AccessTokenResponse;
-import com.core.darkcoders.core.dto.LoginRequest;
-import com.core.darkcoders.core.dto.LoginResponse;
-import com.core.darkcoders.core.dto.RefreshTokenRequest;
-import com.core.darkcoders.core.dto.RegistrationResponse;
+import com.core.darkcoders.core.dto.*;
 import com.core.darkcoders.core.model.User;
 import com.core.darkcoders.core.service.AuthService;
+import com.core.darkcoders.core.service.OTPService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +15,30 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final OTPService otpService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(authService.login(loginRequest));
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody OTPLoginRequest loginRequest) {
+        // Verify OTP first
+        boolean isValidOTP = otpService.verifyOTP(loginRequest.getMobileNumber(), loginRequest.getOtp());
+        if (!isValidOTP) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        // If OTP is valid, proceed with login
+        return ResponseEntity.ok(authService.loginWithOTP(loginRequest.getMobileNumber()));
+    }
+
+    @PostMapping("/register/otp")
+    public ResponseEntity<RegistrationResponse> registerWithOTP(@Valid @RequestBody OTPRegistrationRequest request) {
+        // Verify OTP first
+        boolean isValidOTP = otpService.verifyOTP(request.getMobileNumber(), request.getOtp());
+        if (!isValidOTP) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        // If OTP is valid, proceed with registration
+        return ResponseEntity.ok(authService.registerUserWithOTP(request));
     }
 
     @PostMapping("/refresh")

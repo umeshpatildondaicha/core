@@ -1,7 +1,7 @@
 package com.core.darkcoders.core.model;
 
 public enum UserRole {
-    ROLE_PATIENT,
+    ROLE_ADMIN,
     ROLE_DOCTOR,
-    ROLE_ADMIN
+    ROLE_PATIENT
 } 

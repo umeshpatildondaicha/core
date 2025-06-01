@@ -7,8 +7,11 @@ import com.core.darkcoders.core.exception.DuplicateResourceException;
 import com.core.darkcoders.core.model.Doctor;
 import com.core.darkcoders.core.model.DoctorStatus;
 import com.core.darkcoders.core.model.Patient;
+import com.core.darkcoders.core.model.User;
+import com.core.darkcoders.core.model.UserRole;
 import com.core.darkcoders.core.repository.DoctorRepository;
 import com.core.darkcoders.core.repository.PatientRepository;
+import com.core.darkcoders.core.repository.UserRepository;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +35,7 @@ public class RegistrationService {
 
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final UserRepository userRepository;
     private final Keycloak keycloak;
 
     @Value("${keycloak.realm}")
@@ -49,7 +53,7 @@ public class RegistrationService {
         // Ensure realm and roles exist
         ensureRealmAndRolesExist();
 
-        // Create Keycloak user
+        // Create Keycloak user with password
         String keycloakUserId = createKeycloakUser(request.getEmail(), request.getPassword(), "ROLE_DOCTOR");
         log.info("Created Keycloak user with ID: {}", keycloakUserId);
 
@@ -83,13 +87,6 @@ public class RegistrationService {
             throw new DuplicateResourceException("A patient with contact number " + request.getContact() + " is already registered. Please use a different contact number or contact support if you believe this is an error.");
         }
 
-        // Ensure realm and roles exist
-        ensureRealmAndRolesExist();
-
-        // Create Keycloak user
-        String keycloakUserId = createKeycloakUser(request.getEmail(), request.getPassword(), "ROLE_PATIENT");
-        log.info("Created Keycloak user with ID: {}", keycloakUserId);
-
         // Create Patient entity
         Patient patient = new Patient();
         patient.setFirstName(request.getFirstName());
@@ -98,10 +95,28 @@ public class RegistrationService {
         patient.setDateOfBirth(request.getDateOfBirth());
         patient.setGender(request.getGender());
         patient.setContact(request.getContact());
-        patient.setKeycloakId(keycloakUserId);
+        // Set a temporary keycloak ID that will be updated later when Keycloak is available
+        String tempKeycloakId = "TEMP_" + UUID.randomUUID().toString();
+        patient.setKeycloakId(tempKeycloakId);
 
         Patient savedPatient = patientRepository.save(patient);
         log.info("Patient registered successfully with ID: {}", savedPatient.getPatientId());
+
+        // Create User record for authentication
+        User user = new User();
+        user.setUsername(request.getEmail());
+        user.setEmail(request.getEmail());
+        user.setMobileNumber(request.getContact());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setKeycloakId(tempKeycloakId);
+        user.setRole(UserRole.ROLE_PATIENT);
+        user.setEnabled(true);
+        // Generate a random password since patients will use OTP-based authentication
+        String randomPassword = UUID.randomUUID().toString();
+        user.setPassword(randomPassword);
+        userRepository.save(user);
+        log.info("User record created for patient with ID: {}", savedPatient.getPatientId());
         
         return savedPatient;
     }
@@ -142,6 +157,53 @@ public class RegistrationService {
         } catch (Exception e) {
             log.error("Error ensuring realm and roles exist: {}", e.getMessage(), e);
             throw new AuthenticationException("Failed to setup Keycloak realm and roles: " + e.getMessage());
+        }
+    }
+
+    private String createKeycloakUser(String email, String role) {
+        try {
+            RealmResource realmResource = keycloak.realm(realm);
+            UsersResource usersResource = realmResource.users();
+
+            // Check if user already exists in Keycloak
+            List<UserRepresentation> existingUsers = usersResource.search(email);
+            if (!existingUsers.isEmpty()) {
+                throw new DuplicateResourceException("A user with email " + email + " already exists in the system. Please use a different email address or contact support if you believe this is an error.");
+            }
+
+            // Create user representation
+            UserRepresentation user = new UserRepresentation();
+            user.setEnabled(true);
+            user.setUsername(email);
+            user.setEmail(email);
+            user.setEmailVerified(true);
+
+            // Create user in Keycloak without password
+            Response response = usersResource.create(user);
+            if (response.getStatus() != Response.Status.CREATED.getStatusCode()) {
+                throw new AuthenticationException("Failed to create user in Keycloak. Status: " + response.getStatus());
+            }
+
+            // Get the created user's ID
+            String userId = response.getLocation().getPath().substring(response.getLocation().getPath().lastIndexOf('/') + 1);
+
+            // Get role representation
+            RoleRepresentation roleRepresentation = realmResource.roles().get(role).toRepresentation();
+            if (roleRepresentation == null) {
+                throw new AuthenticationException("Role " + role + " not found in Keycloak");
+            }
+
+            // Assign role
+            realmResource.users().get(userId).roles().realmLevel()
+                    .add(Collections.singletonList(roleRepresentation));
+
+            return userId;
+        } catch (DuplicateResourceException e) {
+            log.error("User already exists in Keycloak: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Error creating Keycloak user: {}", e.getMessage(), e);
+            throw new AuthenticationException("Failed to create user in Keycloak: " + e.getMessage());
         }
     }
 
