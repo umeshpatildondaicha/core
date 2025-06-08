@@ -6,7 +6,7 @@ import com.core.darkcoders.core.dto.RefreshTokenRequest;
 import com.core.darkcoders.core.dto.RegistrationResponse;
 import com.core.darkcoders.core.dto.OTPRegistrationRequest;
 import com.core.darkcoders.core.exception.AuthenticationException;
-import com.core.darkcoders.core.model.User;
+import com.core.darkcoders.core.model.AppUser;
 import com.core.darkcoders.core.model.UserRole;
 import com.core.darkcoders.core.repository.UserRepository;
 import jakarta.ws.rs.core.Response;
@@ -164,7 +164,7 @@ public class AuthService {
         }
     }
 
-    public User getUserByUsername(String username) {
+    public AppUser getUserByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new AuthenticationException("User not found"));
     }
@@ -172,12 +172,12 @@ public class AuthService {
     public LoginResponse loginWithOTP(String mobileNumber) {
         try {
             // Find user by mobile number
-            Optional<User> userOpt = userRepository.findByMobileNumber(mobileNumber);
+            Optional<AppUser> userOpt = userRepository.findByMobileNumber(mobileNumber);
             if (userOpt.isEmpty()) {
                 throw new AuthenticationException("User not found with mobile number: " + mobileNumber);
             }
 
-            User user = userOpt.get();
+            AppUser user = userOpt.get();
             
             // For patients, we'll generate a simple token without Keycloak
             if (user.getRole() == UserRole.ROLE_PATIENT) {
@@ -268,7 +268,7 @@ public class AuthService {
                     .add(Collections.singletonList(realmResource.roles().get(request.getRole()).toRepresentation()));
 
             // Create user in our database
-            User newUser = new User();
+            AppUser newUser = new AppUser();
             newUser.setUsername(request.getEmail());
             newUser.setEmail(request.getEmail());
             newUser.setPassword(randomPassword); // Store the random password

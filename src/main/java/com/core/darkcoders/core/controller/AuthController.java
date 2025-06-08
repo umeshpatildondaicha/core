@@ -1,7 +1,7 @@
 package com.core.darkcoders.core.controller;
 
 import com.core.darkcoders.core.dto.*;
-import com.core.darkcoders.core.model.User;
+import com.core.darkcoders.core.model.AppUser;
 import com.core.darkcoders.core.service.AuthService;
 import com.core.darkcoders.core.service.OTPService;
 import jakarta.validation.Valid;
@@ -57,8 +57,8 @@ public class AuthController {
     }
 
     @GetMapping("/user/{username}")
-    public ResponseEntity<User> getUserInfo(@PathVariable String username) {
-        User user = authService.getUserByUsername(username);
+    public ResponseEntity<AppUser> getUserInfo(@PathVariable String username) {
+        AppUser user = authService.getUserByUsername(username);
         return ResponseEntity.ok(user);
     }
 } 

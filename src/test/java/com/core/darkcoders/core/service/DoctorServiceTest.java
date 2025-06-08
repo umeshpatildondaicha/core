@@ -35,7 +35,7 @@ class DoctorServiceTest {
     @BeforeEach
     void setUp() {
         doctor = new Doctor();
-        doctor.setDoctorId(1L);
+        doctor.setDoctorId(1);
         doctor.setFirstName("John");
         doctor.setLastName("Doe");
         doctor.setEmail("john.doe@example.com");
@@ -65,9 +65,9 @@ class DoctorServiceTest {
 
     @Test
     void getDoctor_Success() {
-        when(doctorRepository.findById(1L)).thenReturn(Optional.of(doctor));
+        when(doctorRepository.findById(1)).thenReturn(Optional.of(doctor));
 
-        DoctorDTO result = doctorService.getDoctor(1L);
+        DoctorDTO result = doctorService.getDoctor(1);
 
         assertNotNull(result);
         assertEquals(doctor.getFirstName(), result.getFirstName());
@@ -76,9 +76,9 @@ class DoctorServiceTest {
 
     @Test
     void getDoctor_NotFound() {
-        when(doctorRepository.findById(1L)).thenReturn(Optional.empty());
+        when(doctorRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> doctorService.getDoctor(1L));
+        assertThrows(ResourceNotFoundException.class, () -> doctorService.getDoctor(1));
     }
 
     @Test

@@ -1,81 +1,86 @@
 package com.core.darkcoders.core.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import java.io.Serializable;
+import java.util.Date;
 
-@Data
 @Entity
-@Table(name = "doctors")
-public class Doctor {
-    
+@Table(name = "DOCTORS")
+@Getter
+@Setter
+public class Doctor implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "doctor_id")
-    private Long doctorId;
+    @Column(name = "DOCTOR_ID")
+    private Integer doctorId;
 
-    @Column(name = "first_name", nullable = false)
+    @Basic
+    @Column(name = "FIRST_NAME", nullable = false)
     private String firstName;
 
-    @Column(name = "last_name", nullable = false)
+    @Basic
+    @Column(name = "LAST_NAME", nullable = false)
     private String lastName;
 
-    @Column(name = "registration_number", unique = true, nullable = false)
-    private String registrationNumber;
-
-    @Column(name = "hospital_id")
-    private Long hospitalId;
-
-    @Column(name = "specialization", nullable = false)
-    private String specialization;
-
-    @Column(name = "global_number", unique = true)
-    private String globalNumber;
-
-    @Column(name = "personal_number", unique = true)
-    private String personalNumber;
-
-    @Column(name = "email", unique = true, nullable = false)
+    @Basic
+    @Column(name = "EMAIL", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "qualifications")
+    @Basic
+    @Column(name = "REGISTRATION_NUMBER", nullable = false, unique = true)
+    private String registrationNumber;
+
+    @Basic
+    @Column(name = "SPECIALIZATION")
+    private String specialization;
+
+    @Basic
+    @Column(name = "HOSPITAL_ID")
+    private Integer hospitalId;
+
+    @Basic
+    @Column(name = "DEPARTMENT_ID")
+    private Integer departmentId;
+
+    @Basic
+    @Column(name = "PERSONAL_NUMBER")
+    private String personalNumber;
+
+    @Basic
+    @Column(name = "GLOBAL_NUMBER")
+    private String globalNumber;
+
+    @Basic
+    @Column(name = "QUALIFICATIONS")
     private String qualifications;
 
-    @Column(name = "profile_image_url")
+    @Basic
+    @Column(name = "PROFILE_IMAGE_URL")
     private String profileImageUrl;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "doctor_status", nullable = false)
-    private DoctorStatus doctorStatus = DoctorStatus.ACTIVE;
-
-    @Column(name = "department_id")
-    private Long departmentId;
-
-    @Column(name = "keycloak_id")
+    @Basic
+    @Column(name = "KEYCLOAK_ID")
     private String keycloakId;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Basic
+    @Column(name = "DOCTOR_STATUS")
+    @Enumerated(EnumType.STRING)
+    private DoctorStatus doctorStatus;
 
+    @Basic
     @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "MODIFIED_TIME", insertable = true, updatable = true)
+    protected Date modifiedTime;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    @Basic
+    @CreationTimestamp
+    @Column(name = "CREATED_TIME", insertable = true, updatable = false)
+    protected Date createdTime;
 } 

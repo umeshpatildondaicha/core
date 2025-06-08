@@ -23,7 +23,7 @@ public class DoctorController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('DOCTOR', 'PATIENT')")
-    public ResponseEntity<DoctorDTO> getDoctor(@PathVariable Long id) {
+    public ResponseEntity<DoctorDTO> getDoctor(@PathVariable Integer id) {
         return ResponseEntity.ok(doctorService.getDoctor(id));
     }
 
@@ -35,13 +35,13 @@ public class DoctorController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity<DoctorDTO> updateDoctor(@PathVariable Long id, @Valid @RequestBody DoctorDTO doctorDTO) {
+    public ResponseEntity<DoctorDTO> updateDoctor(@PathVariable Integer id, @Valid @RequestBody DoctorDTO doctorDTO) {
         return ResponseEntity.ok(doctorService.updateDoctor(id, doctorDTO));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('DOCTOR')")
-    public ResponseEntity<Void> deleteDoctor(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteDoctor(@PathVariable Integer id) {
         doctorService.deleteDoctor(id);
         return ResponseEntity.noContent().build();
     }

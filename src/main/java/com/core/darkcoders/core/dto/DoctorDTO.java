@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 public class DoctorDTO {
-    private Long doctorId;
+    private Integer doctorId;
 
     @NotBlank(message = "First name is required")
     private String firstName;
@@ -29,8 +29,8 @@ public class DoctorDTO {
     @NotBlank(message = "Specialization is required")
     private String specialization;
 
-    private Long hospitalId;
-    private Long departmentId;
+    private Integer hospitalId;
+    private Integer departmentId;
     private String personalNumber;
     private String globalNumber;
     private DoctorStatus doctorStatus = DoctorStatus.ACTIVE; // Default value

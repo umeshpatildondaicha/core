@@ -21,6 +21,9 @@ public class PatientRegistrationRequest {
     @Email(message = "Invalid email format")
     private String email;
     
+    @NotBlank(message = "Password is required")
+    private String password;
+    
     @NotNull(message = "Date of birth is required")
     @Past(message = "Date of birth must be in the past")
     private LocalDate dateOfBirth;

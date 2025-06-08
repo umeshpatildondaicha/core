@@ -4,10 +4,10 @@ import com.core.darkcoders.core.dto.DoctorRegistrationRequest;
 import com.core.darkcoders.core.dto.PatientRegistrationRequest;
 import com.core.darkcoders.core.exception.AuthenticationException;
 import com.core.darkcoders.core.exception.DuplicateResourceException;
+import com.core.darkcoders.core.model.AppUser;
 import com.core.darkcoders.core.model.Doctor;
 import com.core.darkcoders.core.model.DoctorStatus;
 import com.core.darkcoders.core.model.Patient;
-import com.core.darkcoders.core.model.User;
 import com.core.darkcoders.core.model.UserRole;
 import com.core.darkcoders.core.repository.DoctorRepository;
 import com.core.darkcoders.core.repository.PatientRepository;
@@ -43,51 +43,47 @@ public class RegistrationService {
 
     @Transactional
     public Doctor registerDoctor(DoctorRegistrationRequest request) {
-        log.info("Starting doctor registration for email: {}", request.getEmail());
+        log.info("Processing doctor registration for email: {}", request.getEmail());
         
         // Check if doctor already exists
         if (doctorRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateResourceException("A doctor with email " + request.getEmail() + " is already registered. Please use a different email address or contact support if you believe this is an error.");
+            log.error("Doctor with email {} already exists", request.getEmail());
+            throw new RuntimeException("Doctor with this email already exists");
         }
 
-        // Ensure realm and roles exist
-        ensureRealmAndRolesExist();
-
-        // Create Keycloak user with password
-        String keycloakUserId = createKeycloakUser(request.getEmail(), request.getPassword(), "ROLE_DOCTOR");
-        log.info("Created Keycloak user with ID: {}", keycloakUserId);
-
-        // Create Doctor entity
+        // Create doctor
         Doctor doctor = new Doctor();
         doctor.setFirstName(request.getFirstName());
         doctor.setLastName(request.getLastName());
         doctor.setEmail(request.getEmail());
         doctor.setRegistrationNumber(request.getRegistrationNumber());
         doctor.setSpecialization(request.getSpecialization());
-        doctor.setKeycloakId(keycloakUserId);
-        doctor.setDoctorStatus(DoctorStatus.ACTIVE);
+        doctor.setKeycloakId(null); // Will be set after Keycloak user creation
+        doctor.setDoctorStatus(DoctorStatus.PENDING);
 
         Doctor savedDoctor = doctorRepository.save(doctor);
         log.info("Doctor registered successfully with ID: {}", savedDoctor.getDoctorId());
-        
+
         return savedDoctor;
     }
 
     @Transactional
     public Patient registerPatient(PatientRegistrationRequest request) {
-        log.info("Starting patient registration for email: {}", request.getEmail());
+        log.info("Processing patient registration for email: {}", request.getEmail());
         
-        // Check if patient already exists with the same email
+        // Check if patient already exists
         if (patientRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateResourceException("A patient with email " + request.getEmail() + " is already registered. Please use a different email address or contact support if you believe this is an error.");
+            log.error("Patient with email {} already exists", request.getEmail());
+            throw new RuntimeException("Patient with this email already exists");
         }
 
-        // Check if patient already exists with the same contact number
+        // Check if contact number is already registered
         if (patientRepository.existsByContact(request.getContact())) {
-            throw new DuplicateResourceException("A patient with contact number " + request.getContact() + " is already registered. Please use a different contact number or contact support if you believe this is an error.");
+            log.error("Patient with contact number {} already exists", request.getContact());
+            throw new RuntimeException("Patient with this contact number already exists");
         }
 
-        // Create Patient entity
+        // Create patient
         Patient patient = new Patient();
         patient.setFirstName(request.getFirstName());
         patient.setLastName(request.getLastName());
@@ -95,29 +91,26 @@ public class RegistrationService {
         patient.setDateOfBirth(request.getDateOfBirth());
         patient.setGender(request.getGender());
         patient.setContact(request.getContact());
-        // Set a temporary keycloak ID that will be updated later when Keycloak is available
-        String tempKeycloakId = "TEMP_" + UUID.randomUUID().toString();
-        patient.setKeycloakId(tempKeycloakId);
+        patient.setKeycloakId(null); // Will be set after Keycloak user creation
 
         Patient savedPatient = patientRepository.save(patient);
         log.info("Patient registered successfully with ID: {}", savedPatient.getPatientId());
 
-        // Create User record for authentication
-        User user = new User();
-        user.setUsername(request.getEmail());
+        // Create app user
+        AppUser user = new AppUser();
         user.setEmail(request.getEmail());
-        user.setMobileNumber(request.getContact());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        user.setKeycloakId(tempKeycloakId);
-        user.setRole(UserRole.ROLE_PATIENT);
+        user.setKeycloakId(null); // Will be set after Keycloak user creation
+        user.setRole(UserRole.PATIENT);
         user.setEnabled(true);
-        // Generate a random password since patients will use OTP-based authentication
-        String randomPassword = UUID.randomUUID().toString();
-        user.setPassword(randomPassword);
+
+        // Set password
+        user.setPassword(request.getPassword());
+
         userRepository.save(user);
-        log.info("User record created for patient with ID: {}", savedPatient.getPatientId());
-        
+        log.info("App user created successfully for patient ID: {}", savedPatient.getPatientId());
+
         return savedPatient;
     }
 
@@ -259,5 +252,11 @@ public class RegistrationService {
             log.error("Error creating Keycloak user: {}", e.getMessage(), e);
             throw new AuthenticationException("Failed to create user in Keycloak: " + e.getMessage());
         }
+    }
+
+    private AppUser createUser(PatientRegistrationRequest request) {
+        AppUser user = new AppUser();
+        // ... existing code ...
+        return user;
     }
 } 

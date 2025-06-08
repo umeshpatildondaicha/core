@@ -52,7 +52,7 @@ public class DoctorService {
         }
     }
 
-    public DoctorDTO getDoctor(Long id) {
+    public DoctorDTO getDoctor(Integer id) {
         log.info("Fetching doctor with ID: {}", id);
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with ID: " + id));
@@ -67,7 +67,7 @@ public class DoctorService {
     }
 
     @Transactional
-    public DoctorDTO updateDoctor(Long id, DoctorDTO doctorDTO) {
+    public DoctorDTO updateDoctor(Integer id, DoctorDTO doctorDTO) {
         log.info("Updating doctor with ID: {}", id);
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with ID: " + id));
@@ -91,7 +91,7 @@ public class DoctorService {
     }
 
     @Transactional
-    public void deleteDoctor(Long id) {
+    public void deleteDoctor(Integer id) {
         log.info("Deleting doctor with ID: {}", id);
         if (!doctorRepository.existsById(id)) {
             throw new ResourceNotFoundException("Doctor not found with ID: " + id);
