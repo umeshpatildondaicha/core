@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ComponentScan(basePackages = {
     "com.core.darkcoders.core.dao",
-    "com.enttribe.platform.configuration.multilingual.dao"
+    "com.darkcoders.platform.configuration.multilingual.dao"
 })
 public class DaoConfig {
 } 

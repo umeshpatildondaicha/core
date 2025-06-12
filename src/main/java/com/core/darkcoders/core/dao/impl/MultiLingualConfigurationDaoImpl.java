@@ -1,10 +1,10 @@
 package com.core.darkcoders.core.dao.impl;
 
-import com.enttribe.core.generic.dao.IGenericDao;
-import com.enttribe.core.generic.dao.impl.GenericDaoImpl;
-import com.enttribe.platform.configuration.baseconfig.wrapper.CriteriaFilterParameter;
-import com.enttribe.platform.configuration.multilingual.dao.IMultiLingualConfigurationDao;
-import com.enttribe.platform.configuration.multilingual.model.MultiLingualConfiguration;
+import com.core.darkcoders.core.generic.dao.IGenericDao;
+import com.core.darkcoders.core.generic.dao.impl.GenericDaoImpl;
+import com.core.darkcoders.platform.configuration.baseconfig.wrapper.CriteriaFilterParameter;
+import com.darkcoders.platform.configuration.multilingual.dao.IMultiLingualConfigurationDao;
+import com.darkcoders.platform.configuration.multilingual.model.MultiLingualConfiguration;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -26,8 +26,15 @@ import java.util.stream.Collectors;
 @Primary
 public class MultiLingualConfigurationDaoImpl extends GenericDaoImpl<Integer, MultiLingualConfiguration> implements IMultiLingualConfigurationDao {
 
+    private final Class<MultiLingualConfiguration> entityClass = MultiLingualConfiguration.class;
+
     public MultiLingualConfigurationDaoImpl() {
-        super(MultiLingualConfiguration.class);
+        super();
+    }
+
+    @Override
+    protected Class<MultiLingualConfiguration> getEntityClass() {
+        return entityClass;
     }
 
     @PersistenceContext
@@ -46,14 +53,14 @@ public class MultiLingualConfigurationDaoImpl extends GenericDaoImpl<Integer, Mu
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MultiLingualConfiguration> getMultiLingualProps(
             List<CriteriaFilterParameter> filters,
             List<String> projection,
-            Integer uLimit,
-            Integer lLimit,
+            Integer ulimit,
+            Integer llimit,
             String orderByColumnName,
-            String orderType
-    ) {
+            String orderType) {
         try {
             CriteriaBuilder cb = entityManager.getCriteriaBuilder();
             CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
@@ -111,139 +118,18 @@ public class MultiLingualConfigurationDaoImpl extends GenericDaoImpl<Integer, Mu
                 }
             }
 
-            var typedQuery = entityManager.createQuery(query);
-            if (uLimit != null && lLimit != null) {
-                typedQuery.setFirstResult(lLimit);
-                typedQuery.setMaxResults(uLimit - lLimit);
-            }
-
-            return typedQuery.getResultList();
+            return entityManager.createQuery(query)
+                    .setFirstResult(llimit != null ? llimit : 0)
+                    .setMaxResults(ulimit != null ? ulimit : Integer.MAX_VALUE)
+                    .getResultList();
         } catch (Exception e) {
-            log.error("Error getting multilingual properties: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to get multilingual properties", e);
+            log.error("Error in getMultiLingualProps: ", e);
+            throw e;
         }
     }
 
     @Override
-    public boolean isDuplicateEntry(String appName, String lingualKey, String language) {
-        try {
-            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-            CriteriaQuery<Long> query = cb.createQuery(Long.class);
-            Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
-
-            query.select(cb.count(root));
-            query.where(
-                cb.and(
-                    cb.equal(root.get("appName"), appName),
-                    cb.equal(root.get("lingualKey"), lingualKey),
-                    cb.equal(root.get("language"), language)
-                )
-            );
-
-            Long count = entityManager.createQuery(query).getSingleResult();
-            return count > 0;
-        } catch (Exception e) {
-            log.error("Error checking for duplicate entry: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to check for duplicate entry", e);
-        }
-    }
-
-    @Override
-    @Transactional
-    public int deleteByIdList(List<Integer> ids) {
-        try {
-            if (ids != null && !ids.isEmpty()) {
-                CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-                CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
-                Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
-
-                query.where(root.get("id").in(ids));
-                List<MultiLingualConfiguration> entities = entityManager.createQuery(query).getResultList();
-
-                int deletedCount = 0;
-                for (MultiLingualConfiguration entity : entities) {
-                    entityManager.remove(entity);
-                    deletedCount++;
-                }
-                return deletedCount;
-            }
-            return 0;
-        } catch (Exception e) {
-            log.error("Error deleting entities by ID list: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to delete entities", e);
-        }
-    }
-
-    @Override
-    public List<MultiLingualConfiguration> fetchMultiLingualByTypeKey(String appName, String type, String key) {
-        try {
-            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-            CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
-            Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
-
-            query.where(
-                cb.and(
-                    cb.equal(root.get("appName"), appName),
-                    cb.equal(root.get("type"), type),
-                    cb.equal(root.get("lingualKey"), key)
-                )
-            );
-
-            return entityManager.createQuery(query).getResultList();
-        } catch (Exception e) {
-            log.error("Error fetching multilingual by type and key: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch multilingual by type and key", e);
-        }
-    }
-
-    @Override
-    public MultiLingualConfiguration fetchLingualByTypeKey(String appName, String type, String key) {
-        try {
-            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-            CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
-            Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
-
-            query.where(
-                cb.and(
-                    cb.equal(root.get("appName"), appName),
-                    cb.equal(root.get("type"), type),
-                    cb.equal(root.get("lingualKey"), key)
-                )
-            );
-
-            List<MultiLingualConfiguration> results = entityManager.createQuery(query).getResultList();
-            return results.isEmpty() ? null : results.get(0);
-        } catch (Exception e) {
-            log.error("Error fetching lingual by type and key: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch lingual by type and key", e);
-        }
-    }
-
-    @Override
-    @Transactional
-    public Boolean removeMultiConf(List<Integer> ids) {
-        try {
-            if (ids != null && !ids.isEmpty()) {
-                CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-                CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
-                Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
-
-                query.where(root.get("id").in(ids));
-                List<MultiLingualConfiguration> entities = entityManager.createQuery(query).getResultList();
-
-                for (MultiLingualConfiguration entity : entities) {
-                    entityManager.remove(entity);
-                }
-                return true;
-            }
-            return false;
-        } catch (Exception e) {
-            log.error("Error removing multilingual configurations: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to remove multilingual configurations", e);
-        }
-    }
-
-    @Override
+    @Transactional(readOnly = true)
     public Integer getMultiLingualPropsCount(List<CriteriaFilterParameter> filters) {
         try {
             CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -255,7 +141,7 @@ public class MultiLingualConfigurationDaoImpl extends GenericDaoImpl<Integer, Mu
             if (filters != null && !filters.isEmpty()) {
                 List<Predicate> predicates = new ArrayList<>();
                 for (CriteriaFilterParameter filter : filters) {
-                    String operation = filter.getOperation();
+                    String operation = filter.getOperation().toUpperCase();
                     switch (operation) {
                         case "EQUALS":
                             predicates.add(cb.equal(root.get(filter.getLabelType()), filter.getValue()));
@@ -281,61 +167,61 @@ public class MultiLingualConfigurationDaoImpl extends GenericDaoImpl<Integer, Mu
 
             return entityManager.createQuery(query).getSingleResult().intValue();
         } catch (Exception e) {
-            log.error("Error getting multilingual properties count: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to get multilingual properties count", e);
+            log.error("Error in getMultiLingualPropsCount: ", e);
+            throw e;
+        }
+    }
+
+    @Override
+    public boolean isDuplicateEntry(String lingualKey, String appName, String languageType) {
+        try {
+            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaQuery<Long> query = cb.createQuery(Long.class);
+            Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
+
+            query.select(cb.count(root));
+            query.where(
+                cb.and(
+                    cb.equal(root.get("appName"), appName),
+                    cb.equal(root.get("lingualKey"), lingualKey),
+                    cb.equal(root.get("language"), languageType)
+                )
+            );
+
+            Long count = entityManager.createQuery(query).getSingleResult();
+            return count > 0;
+        } catch (Exception e) {
+            log.error("Error checking for duplicate entry: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to check for duplicate entry", e);
         }
     }
 
     @Override
     @Transactional
-    public List<MultiLingualConfiguration> createMultiLingualProperty(List<MultiLingualConfiguration> configurations) {
+    public int deleteByIdList(List<Integer> ids) {
         try {
-            if (configurations != null && !configurations.isEmpty()) {
-                List<MultiLingualConfiguration> savedConfigurations = new ArrayList<>();
-                for (MultiLingualConfiguration config : configurations) {
-                    entityManager.persist(config);
-                    savedConfigurations.add(config);
+            if (ids != null && !ids.isEmpty()) {
+                CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+                CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
+                Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
+
+                query.where(root.get("id").in(ids));
+                List<MultiLingualConfiguration> entities = entityManager.createQuery(query).getResultList();
+
+                for (MultiLingualConfiguration entity : entities) {
+                    entityManager.remove(entity);
                 }
-                return savedConfigurations;
+                return entities.size();
             }
-            return new ArrayList<>();
+            return 0;
         } catch (Exception e) {
-            log.error("Error creating multilingual properties: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to create multilingual properties", e);
+            log.error("Error deleting by id list: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to delete by id list", e);
         }
     }
 
     @Override
-    public Map<String, MultiLingualConfiguration> fetchLatestMultiLingualByType(String appName, Long typeId, String language) {
-        java.util.Map<String, MultiLingualConfiguration> resultMap = new java.util.HashMap<>();
-        try {
-            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-            CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
-            Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
-
-            Predicate appNamePredicate = cb.equal(root.get("appName"), appName);
-            Predicate typeIdPredicate = cb.equal(root.get("typeId"), typeId);
-            Predicate languagePredicate = cb.equal(root.get("language"), language);
-
-            query.where(cb.and(appNamePredicate, typeIdPredicate, languagePredicate));
-            query.orderBy(cb.desc(root.get("id")));
-
-            List<MultiLingualConfiguration> results = entityManager.createQuery(query)
-                .setMaxResults(1)
-                .getResultList();
-            if (!results.isEmpty()) {
-                resultMap.put(language, results.get(0));
-            }
-            return resultMap;
-        } catch (Exception e) {
-            log.error("Error fetching latest multilingual by type: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch latest multilingual by type", e);
-        }
-    }
-
-    @Override
-    public Map<String, MultiLingualConfiguration> fetchMultiLingualByType(String appName, String type) {
-        java.util.Map<String, MultiLingualConfiguration> resultMap = new java.util.HashMap<>();
+    public List<MultiLingualConfiguration> fetchMultiLingualByTypeKey(String languagekey, String languageType, String applicationName) {
         try {
             CriteriaBuilder cb = entityManager.getCriteriaBuilder();
             CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
@@ -343,16 +229,126 @@ public class MultiLingualConfigurationDaoImpl extends GenericDaoImpl<Integer, Mu
 
             query.where(
                 cb.and(
-                    cb.equal(root.get("appName"), appName),
-                    cb.equal(root.get("type"), type)
+                    cb.equal(root.get("appName"), applicationName),
+                    cb.equal(root.get("lingualKey"), languagekey),
+                    cb.equal(root.get("language"), languageType)
+                )
+            );
+
+            return entityManager.createQuery(query).getResultList();
+        } catch (Exception e) {
+            log.error("Error fetching multilingual by type key: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch multilingual by type key", e);
+        }
+    }
+
+    @Override
+    public MultiLingualConfiguration fetchLingualByTypeKey(String languageKey, String languageType, String applicationName) {
+        try {
+            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
+            Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
+
+            query.where(
+                cb.and(
+                    cb.equal(root.get("appName"), applicationName),
+                    cb.equal(root.get("lingualKey"), languageKey),
+                    cb.equal(root.get("language"), languageType)
+                )
+            );
+
+            return entityManager.createQuery(query).getSingleResult();
+        } catch (Exception e) {
+            log.error("Error fetching lingual by type key: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch lingual by type key", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public Boolean removeMultiConf(List<Integer> idlist) {
+        try {
+            if (idlist != null && !idlist.isEmpty()) {
+                CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+                CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
+                Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
+
+                query.where(root.get("id").in(idlist));
+                List<MultiLingualConfiguration> entities = entityManager.createQuery(query).getResultList();
+
+                for (MultiLingualConfiguration entity : entities) {
+                    entityManager.remove(entity);
+                }
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            log.error("Error removing multilingual configuration: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to remove multilingual configuration", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public List<MultiLingualConfiguration> createMultiLingualProperty(List<MultiLingualConfiguration> configurations) {
+        try {
+            List<MultiLingualConfiguration> savedConfigurations = new ArrayList<>();
+            for (MultiLingualConfiguration config : configurations) {
+                entityManager.persist(config);
+                savedConfigurations.add(config);
+            }
+            return savedConfigurations;
+        } catch (Exception e) {
+            log.error("Error creating multilingual properties: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create multilingual properties", e);
+        }
+    }
+
+    @Override
+    public Map<String, MultiLingualConfiguration> fetchLatestMultiLingualByType(String languageType, Long modifiedTime, String applicationName) {
+        try {
+            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
+            Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
+
+            query.where(
+                cb.and(
+                    cb.equal(root.get("appName"), applicationName),
+                    cb.equal(root.get("language"), languageType),
+                    cb.greaterThan(root.get("modifiedTime"), modifiedTime)
                 )
             );
 
             List<MultiLingualConfiguration> results = entityManager.createQuery(query).getResultList();
-            for (MultiLingualConfiguration config : results) {
-                resultMap.put(config.getLanguageType(), config);
-            }
-            return resultMap;
+            return results.stream().collect(Collectors.toMap(
+                MultiLingualConfiguration::getLingualKey,
+                config -> config
+            ));
+        } catch (Exception e) {
+            log.error("Error fetching latest multilingual by type: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch latest multilingual by type", e);
+        }
+    }
+
+    @Override
+    public Map<String, MultiLingualConfiguration> fetchMultiLingualByType(String languageValue, String applicationName) {
+        try {
+            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaQuery<MultiLingualConfiguration> query = cb.createQuery(MultiLingualConfiguration.class);
+            Root<MultiLingualConfiguration> root = query.from(MultiLingualConfiguration.class);
+
+            query.where(
+                cb.and(
+                    cb.equal(root.get("appName"), applicationName),
+                    cb.equal(root.get("language"), languageValue)
+                )
+            );
+
+            List<MultiLingualConfiguration> results = entityManager.createQuery(query).getResultList();
+            return results.stream().collect(Collectors.toMap(
+                MultiLingualConfiguration::getLingualKey,
+                config -> config
+            ));
         } catch (Exception e) {
             log.error("Error fetching multilingual by type: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to fetch multilingual by type", e);

@@ -1,6 +1,6 @@
 package com.core.darkcoders.core.dao.impl;
 
-import com.enttribe.core.generic.dao.IGenericDao;
+import com.darkcoders.core.generic.dao.IGenericDao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;

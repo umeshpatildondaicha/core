@@ -1,9 +1,9 @@
 package com.core.darkcoders.core.service.impl;
 
 import com.core.darkcoders.core.service.MultiLingualService;
-import com.enttribe.platform.configuration.baseconfig.wrapper.CriteriaFilterParameter;
-import com.enttribe.platform.configuration.multilingual.dao.IMultiLingualConfigurationDao;
-import com.enttribe.platform.configuration.multilingual.model.MultiLingualConfiguration;
+import com.core.darkcoders.platform.configuration.baseconfig.wrapper.CriteriaFilterParameter;
+import com.darkcoders.platform.configuration.multilingual.dao.IMultiLingualConfigurationDao;
+import com.darkcoders.platform.configuration.multilingual.model.MultiLingualConfiguration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service
+@Service("newMultiLingualService")
 @RequiredArgsConstructor
 public class MultiLingualServiceImpl implements MultiLingualService {
 

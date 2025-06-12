@@ -1,4 +1,4 @@
-package com.core.darkcoders.platform.configuration.baseconfig.wrapper;
+package com.darkcoders.platform.configuration.baseconfig.wrapper;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;

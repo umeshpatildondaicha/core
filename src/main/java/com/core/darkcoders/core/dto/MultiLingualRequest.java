@@ -1,6 +1,6 @@
 package com.core.darkcoders.core.dto;
 
-import com.enttribe.platform.configuration.baseconfig.wrapper.CriteriaFilterParameter;
+import com.core.darkcoders.platform.configuration.baseconfig.wrapper.CriteriaFilterParameter;
 import lombok.Data;
 
 import java.util.List;

@@ -80,7 +80,7 @@ public class BaseConfigurationServiceImpl implements BaseConfigurationService {
     public byte[] downloadBaseConfiguration(String applicationName) {
         logger.info("Downloading base configuration for application: {}", applicationName);
         List<CriteriaFilterParameter> filters = new ArrayList<>();
-        filters.add(new CriteriaFilterParameter("String", "applicationName", "EQUALS", applicationName));
+        filters.add(new CriteriaFilterParameter("String", "applicationName", "EQUALS", applicationName, "applicationName"));
 
         List<String> projection = Arrays.asList("configKey", "configTag", "applicationName", "configValue");
 
