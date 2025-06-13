@@ -14,7 +14,7 @@ import java.util.Date;
 
 @Data
 @Entity
-@Table(name = "multi_lingual_configuration")
+@Table(name = "multilingual_configuration")
 @Audited
 public class MultiLingualConfiguration implements Serializable {
 
